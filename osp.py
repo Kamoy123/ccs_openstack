@@ -2,10 +2,13 @@
 # OpenStack + Kubernetes environment on CloudLab.
 
 """
-Simple multi-node OpenStack + Kubernetes deployment using Ubuntu 24.04.
-Kubernetes is deployed using OpenStack Magnum.
-This profile provisions one controller node and a user-defined number of compute nodes.
-Default Magnum scripts and settings are used for the deployment.
+Multi-node OpenStack + Kubernetes deployment optimized for Mattermost on Ubuntu 24.04.
+This profile provisions a production-ready OpenStack environment with:
+- OpenStack core services (Nova, Neutron, Cinder, Glance, Heat, Horizon)
+- Octavia Load Balancer for high availability
+- Kubernetes support via OpenStack Magnum
+- VM flavors optimized for Mattermost (4GB+ RAM)
+- One controller node and user-defined number of compute nodes
 
 Instructions:
 ## Basic Instructions
@@ -27,6 +30,20 @@ Default dashboard credentials are:
 Default: `crookshanks` / `chocolateFrog!`
 If you changed the default values and forgot what you set it to, click on the `Bindings` tab on the experiment page to see the custom settings.
 
+### Deploying Mattermost
+
+This profile is optimized for Mattermost deployment with two approaches:
+
+#### Option 1: Direct VM Deployment
+1. Create a VM with PostgreSQL database
+2. Create a VM with Mattermost application server
+3. Optional: Use Octavia load balancer for high availability
+
+#### Option 2: Kubernetes Deployment
+1. Deploy a Kubernetes cluster using Magnum (see instructions below)
+2. Install Mattermost using Helm chart
+3. Use Kubernetes LoadBalancer service type with Octavia
+
 ### Some commands to run on the controller node
 
 Click on the settings gear icon on the right side of the experiment page to open a shell to the controller node.
@@ -34,6 +51,32 @@ Click on the settings gear icon on the right side of the experiment page to open
 #### Run every time you open a new shell
 ```bash
 $ source /opt/devstack/openrc admin admin
+```
+
+#### Deploy Mattermost on a VM
+```bash
+# Create a security group for Mattermost
+$ openstack security group create mattermost-sg
+$ openstack security group rule create --protocol tcp --dst-port 8065 --remote-ip 0.0.0.0/0 mattermost-sg
+$ openstack security group rule create --protocol tcp --dst-port 22 --remote-ip 0.0.0.0/0 mattermost-sg
+$ openstack security group rule create --protocol tcp --dst-port 5432 --remote-ip 0.0.0.0/0 mattermost-sg
+
+# Create a keypair
+$ ssh-keygen -t rsa -b 4096 -f ~/.ssh/mykey
+$ openstack keypair create --public-key ~/.ssh/mykey.pub mykey
+$ chmod 600 ~/.ssh/mykey
+
+# Launch VMs using mattermost-optimized flavors (m1.mattermost or m1.large)
+$ openstack server create --flavor m1.mattermost --image <ubuntu-image-id> --network private --security-group mattermost-sg --key-name mykey mattermost-db
+$ openstack server create --flavor m1.mattermost --image <ubuntu-image-id> --network private --security-group mattermost-sg --key-name mykey mattermost-app
+
+# Assign floating IPs
+$ openstack floating ip create public
+$ openstack server add floating ip mattermost-app <floating-ip>
+
+# SSH into the VM and install Mattermost
+$ ssh -i ~/.ssh/mykey ubuntu@<floating-ip>
+# Follow Mattermost installation docs: https://docs.mattermost.com/install/install-ubuntu.html
 ```
 
 #### Create Keypair and Deploy a Kubernetes Cluster
@@ -46,8 +89,8 @@ $ openstack keypair list	# To Confirm the keypair was created.
 $ openstack [option] --help
 $ openstack coe cluster template list # This shows a list of custom K8s templates. # Note the UUID of the required template.
 
-$ openstack coe cluster create --cluster-template <UUID> --master-count 1 --node-count 1 --keypair mykey  my-first-k8s-cluster	# Creates a K8s deployement named 'my-first-k8s-cluster'. Replace <UUID> with the actual UUID as noted previously.
-$ watch openstack coe cluster show my-first-k8s-cluster    # Monitor the cluster creation process.
+$ openstack coe cluster create --cluster-template <UUID> --master-count 1 --node-count 2 --keypair mykey  mattermost-k8s-cluster	# Creates a K8s deployment named 'mattermost-k8s-cluster' with 2 worker nodes. Replace <UUID> with the actual UUID as noted previously.
+$ watch openstack coe cluster show mattermost-k8s-cluster    # Monitor the cluster creation process.
 
 $ openstack stack list  # Note the stack ID of the cluster.
 $ watch openstack stack resource list <stack_id>  # Replace <stack_id> with the actual stack ID.
@@ -60,6 +103,34 @@ $ openstack stack resource show <failed-stack-name> <failed-resource-name>  # Re
 
 After the cluster is successfully created, you can ssh into a node using `ssh -i ~/.ssh/mykey core@<node-ip>`. You can get the node IPs from the [dashboard](http://{host-controller}/dashboard) or by running `openstack server list`.
 
+#### Deploy Mattermost on Kubernetes
+```bash
+# Get kubeconfig for your cluster
+$ openstack coe cluster config mattermost-k8s-cluster
+$ export KUBECONFIG=~/config
+
+# Install Helm (if not already installed)
+$ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# Add Mattermost Helm repository
+$ helm repo add mattermost https://helm.mattermost.com
+$ helm repo update
+
+# Create namespace
+$ kubectl create namespace mattermost
+
+# Install Mattermost with LoadBalancer (uses Octavia)
+$ helm install mattermost mattermost/mattermost-team-edition \
+  --namespace mattermost \
+  --set service.type=LoadBalancer \
+  --set mysql.mysqlRootPassword=chocolateFrog! \
+  --set mysql.mysqlPassword=chocolateFrog!
+
+# Get the LoadBalancer IP
+$ kubectl get svc -n mattermost mattermost-mattermost-team-edition
+# Access Mattermost at http://<EXTERNAL-IP>:8065
+```
+
 > **Note**
 > - It may happen that OpenStack does not get installed properly on the first attempt. If you encounter issues logging into the dashboard or if the `openstack` CLI commands do not work, browse `/tmp/install-openstack.log` on the controller node to see what went wrong. If you continue to face issues, consider re-instantiating the profile with a different hardware type.
 > - If you face issues with Magnum/Kubernetes, browse `/tmp/configure-magnum.log` and `/opt/stack/logs/` on the controller node to see what went wrong.
@@ -69,17 +140,18 @@ After the cluster is successfully created, you can ssh into a node using `ssh -i
 ### Resources
 - [CloudLab Documentation](https://docs.cloudlab.us/)
 - [OpenStack Documentation](https://docs.openstack.org/)
+- [Mattermost Installation Guide](https://docs.mattermost.com/install/install-ubuntu.html)
+- [Mattermost Helm Chart](https://github.com/mattermost/mattermost-helm)
 - [Kubernetes Documentation](https://kubernetes.io/docs/home/)
 - [DevStack Documentation](https://docs.openstack.org/devstack/latest/)
 - [Magnum Documentation](https://docs.openstack.org/magnum/latest/)
+- [Octavia Documentation](https://docs.openstack.org/octavia/latest/)
 - [Keystone Documentation](https://docs.openstack.org/keystone/latest/)
 - [Horizon Documentation](https://docs.openstack.org/horizon/latest/)
 - [Nova Documentation](https://docs.openstack.org/nova/latest/)
 - [Neutron Documentation](https://docs.openstack.org/neutron/latest/)
 - [Glance Documentation](https://docs.openstack.org/glance/latest/)
 - [Cinder Documentation](https://docs.openstack.org/cinder/latest/)
-- [Heat Documentation](https://docs.openstack.org/heat/latest/)
-- [Manila Documentation](https://docs.openstack.org/manila/latest/)
 """
 
 #!/usr/bin/env python

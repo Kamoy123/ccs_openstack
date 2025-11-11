@@ -38,7 +38,8 @@ echo "Found image: '$K8S_IMAGE_NAME'. This will be used for the cluster template
 # --- Create Magnum Cluster Template ---
 # A Cluster Template defines the parameters for creating a Kubernetes cluster.[29]
 # This allows for consistent cluster deployments.
-echo "Creating Magnum Cluster Template for Kubernetes..."
+
+echo "Creating Magnum Cluster Template for Kubernetes ..."
 openstack coe cluster template create k8s-default-template \
     --image "$K8S_IMAGE_NAME" \
     --keypair mykey \
@@ -49,6 +50,20 @@ openstack coe cluster template create k8s-default-template \
     --docker-volume-size 150 \
     --network-driver flannel \
     --coe kubernetes
+
+# Create Mattermost-optimized cluster template with larger flavors
+echo "Creating Magnum Cluster Template for Mattermost deployment..."
+openstack coe cluster template create k8s-mattermost-template \
+    --image "$K8S_IMAGE_NAME" \
+    --keypair mykey \
+    --external-network public \
+    --dns-nameserver 8.8.8.8 \
+    --master-flavor m1.large \
+    --flavor m1.mattermost \
+    --docker-volume-size 200 \
+    --network-driver flannel \
+    --coe kubernetes \
+    --labels octavia_enabled=true
 
 # --- Verification ---
 # List the created cluster templates to confirm success.

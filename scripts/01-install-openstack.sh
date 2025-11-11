@@ -58,6 +58,8 @@ enable_plugin heat https://opendev.org/openstack/heat
 # enable_plugin manila-ui https://opendev.org/openstack/manila-ui   # (uncomment if you want the Manila dashboard)
 enable_plugin magnum https://opendev.org/openstack/magnum
 enable_plugin magnum-ui https://opendev.org/openstack/magnum-ui
+enable_plugin octavia https://opendev.org/openstack/octavia
+enable_plugin octavia-dashboard https://opendev.org/openstack/octavia-dashboard
 
 # --- Service Configuration ---
 
@@ -95,5 +97,29 @@ chown -R stack:stack /opt/devstack
 su stack -c "/opt/devstack/stack.sh"
 
 echo "OpenStack Installation Complete."
+
+# --- Create Custom Flavors for Mattermost ---
+echo "Creating custom flavors optimized for Mattermost deployment..."
+
+# Source credentials to use OpenStack CLI
+source /opt/devstack/openrc admin admin
+
+# Wait for services to be ready
+sleep 30
+
+# Create Mattermost-optimized flavor: 4 vCPUs, 8GB RAM, 40GB disk
+# This is suitable for Mattermost application servers
+openstack flavor create --vcpus 4 --ram 8192 --disk 40 m1.mattermost || echo "Flavor m1.mattermost may already exist"
+
+# Create large flavor: 4 vCPUs, 8GB RAM, 80GB disk
+# For database servers or combined deployments
+openstack flavor create --vcpus 4 --ram 8192 --disk 80 m1.large || echo "Flavor m1.large may already exist"
+
+# Create xlarge flavor: 8 vCPUs, 16GB RAM, 100GB disk
+# For high-availability or high-traffic deployments
+openstack flavor create --vcpus 8 --ram 16384 --disk 100 m1.xlarge || echo "Flavor m1.xlarge may already exist"
+
+echo "Custom flavors created successfully."
+openstack flavor list
 
 exit
