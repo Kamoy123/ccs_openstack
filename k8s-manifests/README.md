@@ -10,32 +10,6 @@ The deployment includes:
 - **Mattermost Operator** - Manages Mattermost installation
 - **Mattermost** - The collaboration platform with 20GB file storage
 
-## Prerequisites
-
-Before deploying, ensure you have:
-1. A running Kubernetes cluster (created via OpenStack Magnum)
-2. `kubectl` configured with cluster access
-3. Helm 3 installed
-4. Cluster admin permissions
-
-## Quick Start (Automated)
-
-Use the automated deployment script:
-
-```bash
-# From the controller node
-cd /local/repository/scripts
-chmod +x 03-deploy-mattermost-k8s.sh
-./03-deploy-mattermost-k8s.sh
-```
-
-This script will:
-- Install NGINX Ingress Controller
-- Deploy PostgreSQL with persistent storage
-- Install Mattermost Operator
-- Deploy Mattermost
-- Display access information
-
 ## Manual Deployment Steps
 
 If you prefer manual deployment, follow these steps:
@@ -43,19 +17,15 @@ If you prefer manual deployment, follow these steps:
 ### Step 1: Install NGINX Ingress Controller
 
 ```bash
-# Add Helm repository
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
-
 # Create namespace
 kubectl create namespace ingress-nginx
 
-# Install NGINX Ingress
-helm install nginx-ingress ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx \
-  --set controller.service.type=LoadBalancer
+# Implement Nginx ingress controller
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
 
-# Get the LoadBalancer IP (save this for later)
+# Get the ingress controller's IP (save this for later)
 kubectl get svc -n ingress-nginx
 ```
 

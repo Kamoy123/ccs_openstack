@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:15
+        image: postgres:18
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5432
         env:
@@ -37,16 +38,16 @@ spec:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
         volumeMounts:
-        - name: postgres-storage
-          mountPath: /var/lib/postgresql/data
-        resources:
+        - mountPath: /var/lib/postgresql/data
+          name: postgresdata
+        resources:  # resource requests and limits
           requests:
             memory: "256Mi"
             cpu: "250m"
           limits:
             memory: "512Mi"
             cpu: "500m"
-        livenessProbe:
+        livenessProbe: # health check for postgres container
           exec:
             command:
             - pg_isready
@@ -54,7 +55,7 @@ spec:
             - mmuser
           initialDelaySeconds: 30
           periodSeconds: 10
-        readinessProbe:
+        readinessProbe: # readiness check for postgres container
           exec:
             command:
             - pg_isready
@@ -63,15 +64,17 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
       volumes:
-      - name: postgres-storage
+      - name: postgresdata
         persistentVolumeClaim:
           claimName: postgres-pvc
----
+--- # Create service for PostgreSQL
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres
   namespace: mattermost
+  labels:
+    app: postgres
 spec:
   selector:
     app: postgres

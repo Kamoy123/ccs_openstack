@@ -85,281 +85,26 @@ Mattermost requires three key components:
 3. **Persistent Storage** - for file uploads and attachments
 
 ##### Step 1: Get Kubernetes Cluster Access
-```bash
-# Get kubeconfig for your cluster
-$ openstack coe cluster config mattermost-k8s-cluster
-$ export KUBECONFIG=~/config
-
-# Verify cluster connectivity
-$ kubectl get nodes
-```
 
 ##### Step 2: Install Helm (if not already installed)
-```bash
-$ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-$ helm version
-```
 
 ##### Step 3: Install NGINX Ingress Controller
-```bash
-# Add NGINX Ingress Helm repository
-$ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-$ helm repo update
-
-# Create namespace for ingress
-$ kubectl create namespace ingress-nginx
-
-# Install NGINX Ingress Controller
-$ helm install nginx-ingress ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx \
-  --set controller.service.type=LoadBalancer
-
-# Verify installation
-$ kubectl get pods -n ingress-nginx
-$ kubectl get svc -n ingress-nginx
-
-# Get the LoadBalancer IP (note this for later)
-$ kubectl get svc -n ingress-nginx nginx-ingress-ingress-nginx-controller
-```
 
 ##### Step 4: Deploy PostgreSQL Database
-```bash
-# Create namespace for Mattermost
-$ kubectl create namespace mattermost
-
-# Create PostgreSQL persistent volume claim
-$ cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: postgres-pvc
-  namespace: mattermost
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-EOF
-
-# Create PostgreSQL secret
-$ kubectl create secret generic postgres-secret \
-  --from-literal=POSTGRES_USER=mmuser \
-  --from-literal=POSTGRES_PASSWORD=chocolateFrog! \
-  --from-literal=POSTGRES_DB=mattermost \
-  --namespace mattermost
-
-# Deploy PostgreSQL
-$ cat <<EOF | kubectl apply -f -
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: postgres
-  namespace: mattermost
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: postgres
-  template:
-    metadata:
-      labels:
-        app: postgres
-    spec:
-      containers:
-      - name: postgres
-        image: postgres:15
-        ports:
-        - containerPort: 5432
-        env:
-        - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: POSTGRES_USER
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: POSTGRES_PASSWORD
-        - name: POSTGRES_DB
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: POSTGRES_DB
-        - name: PGDATA
-          value: /var/lib/postgresql/data/pgdata
-        volumeMounts:
-        - name: postgres-storage
-          mountPath: /var/lib/postgresql/data
-      volumes:
-      - name: postgres-storage
-        persistentVolumeClaim:
-          claimName: postgres-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres
-  namespace: mattermost
-spec:
-  selector:
-    app: postgres
-  ports:
-  - port: 5432
-    targetPort: 5432
-EOF
-
-# Verify PostgreSQL is running
-$ kubectl get pods -n mattermost
-$ kubectl logs -n mattermost -l app=postgres
-```
 
 ##### Step 5: Install Mattermost Operator
-```bash
-# Add Mattermost Helm repository
-$ helm repo add mattermost https://helm.mattermost.com
-$ helm repo update
-
-# Create namespace for Mattermost Operator
-$ kubectl create namespace mattermost-operator
-
-# Install Mattermost Operator
-$ helm install mattermost-operator mattermost/mattermost-operator \
-  --namespace mattermost-operator
-
-# Verify Operator installation
-$ kubectl get pods -n mattermost-operator
-```
 
 ##### Step 6: Create Database Connection Secret
-```bash
-# Create base64-encoded database connection strings
-# Connection string format: postgres://mmuser:chocolateFrog!@postgres.mattermost.svc.cluster.local:5432/mattermost?connect_timeout=10
-
-# For convenience, create the secret directly
-$ cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mattermost-postgres-connection
-  namespace: mattermost
-type: Opaque
-stringData:
-  DB_CONNECTION_STRING: "postgres://mmuser:chocolateFrog!@postgres.mattermost.svc.cluster.local:5432/mattermost?connect_timeout=10"
-  DB_CONNECTION_CHECK_URL: "postgres://mmuser:chocolateFrog!@postgres.mattermost.svc.cluster.local:5432/mattermost?connect_timeout=10"
-EOF
-```
 
 ##### Step 7: Create Mattermost Filestore PVC
-```bash
-# Create persistent volume claim for Mattermost files
-$ cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mattermost-filestore-pvc
-  namespace: mattermost
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
-EOF
-```
 
 ##### Step 8: Deploy Mattermost
-```bash
-# Get the LoadBalancer IP from NGINX Ingress
-$ INGRESS_IP=$(kubectl get svc -n ingress-nginx nginx-ingress-ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-$ echo "Ingress IP: $INGRESS_IP"
-
-# Create Mattermost installation manifest
-$ cat <<EOF | kubectl apply -f -
-apiVersion: installation.mattermost.com/v1beta1
-kind: Mattermost
-metadata:
-  name: mattermost
-  namespace: mattermost
-spec:
-  size: 1000users
-  version: 9.11.0
-  ingress:
-    enabled: true
-    host: mattermost.$INGRESS_IP.nip.io
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-  database:
-    external:
-      secret: mattermost-postgres-connection
-  fileStore:
-    local:
-      volumeClaim:
-        name: mattermost-filestore-pvc
-  mattermostEnv:
-  - name: MM_SERVICESETTINGS_SITEURL
-    value: "http://mattermost.$INGRESS_IP.nip.io"
-  - name: MM_SERVICESETTINGS_ENABLELOCALMODE
-    value: "true"
-  replicas: 1
-EOF
-
-# Wait for Mattermost to be ready
-$ kubectl get pods -n mattermost -w
-```
 
 ##### Step 9: Access Mattermost
-```bash
-# Check Mattermost pods status
-$ kubectl get pods -n mattermost
-
-# Check Mattermost service
-$ kubectl get svc -n mattermost
-
-# Check ingress
-$ kubectl get ingress -n mattermost
-
-# Get the access URL
-$ INGRESS_IP=$(kubectl get svc -n ingress-nginx nginx-ingress-ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-$ echo "Access Mattermost at: http://mattermost.$INGRESS_IP.nip.io"
-
-# Troubleshooting: Check logs if needed
-$ kubectl logs -n mattermost -l app.kubernetes.io/name=mattermost
-$ kubectl describe mattermost -n mattermost mattermost
-```
-
-##### Alternative: Quick Deployment Script
-You can use the automated deployment script:
-```bash
-$ chmod +x /local/repository/scripts/03-deploy-mattermost-k8s.sh
-$ /local/repository/scripts/03-deploy-mattermost-k8s.sh
-```
-
-This script automatically:
-- Installs NGINX Ingress Controller
-- Deploys PostgreSQL with persistent storage
-- Installs Mattermost Operator
-- Deploys Mattermost with proper configuration
-- Displays access URL
-
-> **Note**
-> - It may happen that OpenStack does not get installed properly on the first attempt. If you encounter issues logging into the dashboard or if the `openstack` CLI commands do not work, browse `/tmp/install-openstack.log` on the controller node to see what went wrong. If you continue to face issues, consider re-instantiating the profile with a different hardware type.
-> - If you face issues with Magnum/Kubernetes, browse `/tmp/configure-magnum.log` and `/opt/stack/logs/` on the controller node to see what went wrong.
-> - If the cluster creation fails due to insufficient resources, try increasing the number of compute nodes when instantiating the profile, or decreasing the number of worker nodes for the cluster.
-> - Using `watch` option is optional, it just refreshes the output every 2 seconds. Use `Ctrl+C` to exit watch.
-
-### Additional Files
-
-This profile includes automated deployment scripts and Kubernetes manifests:
 
 #### Deployment Scripts
 - `scripts/01-install-openstack.sh` - Installs and configures OpenStack
 - `scripts/02-configure-magnum.sh` - Configures Magnum for Kubernetes
-- `scripts/03-deploy-mattermost-k8s.sh` - Automated Mattermost deployment on K8s
 
 #### Kubernetes Manifests
 The `k8s-manifests/` directory contains:
@@ -389,6 +134,12 @@ See `k8s-manifests/README.md` for manual deployment steps and troubleshooting.
 - [Neutron Documentation](https://docs.openstack.org/neutron/latest/)
 - [Glance Documentation](https://docs.openstack.org/glance/latest/)
 - [Cinder Documentation](https://docs.openstack.org/cinder/latest/)
+- [Heat Documentation](https://docs.openstack.org/heat/latest/)
+- [Manila Documentation](https://docs.openstack.org/manila/latest/)
+- [Helm Documentation](https://helm.sh/docs/helm/helm_install/)
+- [PostgreSQL Documentation](https://www.digitalocean.com/community/tutorials/how-to-deploy-postgres-to-kubernetes-cluster)
+- [k8s health checks](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+- [k8s persistent volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 """
 
 #!/usr/bin/env python
