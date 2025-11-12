@@ -16,6 +16,14 @@ spec:
       # Add security context to ensure proper permissions
       securityContext:
         fsGroup: 999  # postgres group ID
+      # Init container to fix permissions
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ['sh', '-c', 'chown -R 999:999 /var/lib/postgresql/data && chmod -R 700 /var/lib/postgresql/data']
+        volumeMounts:
+        - name: postgresdata
+          mountPath: /var/lib/postgresql/data
       containers:
       - name: postgres
         image: postgres:15
