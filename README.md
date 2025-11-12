@@ -20,10 +20,20 @@ If you prefer manual deployment, follow these steps:
 # Create namespace
 kubectl create namespace ingress-nginx
 
-# Implement Nginx ingress controller
-helm upgrade --install ingress-nginx ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace
+# Add helm repo
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+
+# Update helm repo
+helm repo update
+
+# Install ingress-nginx
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+--version 4.3.0 \
+--namespace ingress-nginx \
+--create-namespace
+
+# Release node tains if needed
+kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized-
 
 # Get the ingress controller's IP (save this for later)
 kubectl get svc -n ingress-nginx
