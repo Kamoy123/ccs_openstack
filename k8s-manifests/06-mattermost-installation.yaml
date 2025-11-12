@@ -13,26 +13,26 @@ kind: Mattermost
 metadata:
   name: mattermost
   namespace: mattermost
-version: 11.0.4 # See: https://docs.mattermost.com/product-overview/version-archive.html
 spec:
+  version: 11.0.4 # See: https://docs.mattermost.com/product-overview/version-archive.html
   size: 1000users
   ingress:
     enabled: true
     # IMPORTANT: Replace ${INGRESS_IP} with your actual LoadBalancer IP
     host: mattermost.10.254.206.80.nip.io
-    annotations:
-      kubernetes.io/ingress.class: nginx
+    ingressClass: nginx
+  database:
     external:
       secret: mattermost-postgres-connection
   fileStore:
-    local:
-      volumeClaim:
-        name: mattermost-filestore-pvc
-  resources:
-    requests:
-      cpu: "500m"
-      memory: "512Mi"
-    limits:
-      cpu: "2000m"
-      memory: "2Gi"
+    externalVolume:
+      volumeClaimName: mattermost-filestore-pvc
+  scheduling:
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "2000m"
+        memory: "2Gi"
   replicas: 1

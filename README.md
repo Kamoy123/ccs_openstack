@@ -26,6 +26,10 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 # Update helm repo
 helm repo update
 
+# check for chart version using:
+# chart version must support k8s 1.23.3
+helm search repo mattermost/mattermost-operator --versions | head
+
 # Install ingress-nginx
 helm install ingress-nginx ingress-nginx/ingress-nginx \
 --version 4.3.0 \
@@ -85,9 +89,15 @@ helm repo update
 # Create namespace
 kubectl create namespace mattermost-operator
 
-# Install Mattermost Operator
+# Install Mattermost Operator, ingore errors
 helm install mattermost-operator mattermost/mattermost-operator \
-  --namespace mattermost-operator
+  --version 1.0.3 \
+  --namespace mattermost-operator \
+  --create-namespace \
+  --set mattermostCR.enabled=false \
+  --set mysqlOperator.enabled=false \
+  --set minioOperator.enabled=false
+
 
 # Verify operator is running
 kubectl get pods -n mattermost-operator
@@ -97,10 +107,10 @@ kubectl get pods -n mattermost-operator
 
 ```bash
 # Create database connection secret
-kubectl apply -f 03-mattermost-db-secret.yaml
+kubectl apply -f 04-mattermost-db-secret.yaml
 
 # Create filestore PVC
-kubectl apply -f 04-mattermost-filestore-pvc.yaml
+kubectl apply -f 05-mattermost-filestore-pvc.yaml
 
 # Get your LoadBalancer IP
 INGRESS_IP=$(kubectl get svc -n ingress-nginx nginx-ingress-ingress-nginx-controller \
@@ -110,7 +120,7 @@ echo "Your Ingress IP: $INGRESS_IP"
 # Edit 05-mattermost-installation.yaml
 # Replace all instances of ${INGRESS_IP} with your actual IP address
 # Then apply:
-kubectl apply -f 05-mattermost-installation.yaml
+kubectl apply -f 06-mattermost-installation.yaml
 
 # Wait for Mattermost to be ready (may take 5-10 minutes)
 kubectl get pods -n mattermost -w
