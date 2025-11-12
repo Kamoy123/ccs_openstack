@@ -139,7 +139,7 @@ Default storage allocations:
 To deploy a different Mattermost version, edit `05-mattermost-installation.yaml`:
 ```yaml
 spec:
-  version: 9.11.0  # Change this to your desired version
+  version: 11.0.4
 ```
 
 See [Mattermost Version Archive](https://docs.mattermost.com/product-overview/version-archive.html) for available versions.
@@ -149,7 +149,7 @@ See [Mattermost Version Archive](https://docs.mattermost.com/product-overview/ve
 The deployment is configured for 1000 users. To change:
 ```yaml
 spec:
-  size: 1000users  # Options: 100users, 1000users, 5000users, 10000users, 25000users
+  size: 1000users 
 ```
 
 ## Troubleshooting
