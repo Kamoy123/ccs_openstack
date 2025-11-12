@@ -111,8 +111,9 @@ sleep 30
 # This is suitable for Mattermost application servers
 # only kept this because the hypervisor do not have enough disk space for larger flavors
 # maximum disk size is 60 GB
-openstack flavor create --vcpus 4 --ram 8192 --disk 40 m1.mattermost || echo "Flavor m1.mattermost may already exist"
+openstack flavor create --vcpus 2 --ram 4096 --disk 30 m1.k8s-worker || echo "Flavor m1.k8s-worker may already exist"
 
+openstack flavor create --vcpus 2 --ram 4096 --disk 30 m1.k8s-master || echo "Flavor m1.k8s-master may already exist"
 # Create large flavor: 4 vCPUs, 8GB RAM, 80GB disk
 # For database servers or combined deployments
 # openstack flavor create --vcpus 4 --ram 8192 --disk 80 m1.large || echo "Flavor m1.large may already exist"

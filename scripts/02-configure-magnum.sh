@@ -53,15 +53,18 @@ echo "Found image: '$K8S_IMAGE_NAME'. This will be used for the cluster template
 
 # Create Mattermost-optimized cluster template with larger flavors
 echo "Creating Magnum Cluster Template for Mattermost deployment..."
+# Note: Using Calico instead of Flannel due to image availability issues
+# Flannel's default images (quay.io/coreos/flannel-cni:v0.3.0) are no longer publicly accessible
+# Using flannel will cause cluster to be unhealthy
 openstack coe cluster template create k8s-mattermost-template \
     --image "$K8S_IMAGE_NAME" \
     --keypair mykey \
     --external-network public \
     --dns-nameserver 8.8.8.8 \
-    --master-flavor m1.mattermost \
-    --flavor m1.mattermost \
-    --docker-volume-size 200 \
-    --network-driver flannel \
+    --master-flavor m1.k8s-master \
+    --flavor m1.k8s-worker \
+    --docker-volume-size 20 \
+    --network-driver calico \
     --coe kubernetes \
     --labels octavia_enabled=true
 
