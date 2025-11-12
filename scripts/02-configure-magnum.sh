@@ -58,7 +58,7 @@ openstack coe cluster template create k8s-mattermost-template \
     --keypair mykey \
     --external-network public \
     --dns-nameserver 8.8.8.8 \
-    --master-flavor m1.large \
+    --master-flavor m1.mattermost \
     --flavor m1.mattermost \
     --docker-volume-size 200 \
     --network-driver flannel \

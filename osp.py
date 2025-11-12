@@ -52,7 +52,7 @@ $ source /opt/devstack/openrc admin admin
 ```bash
 $ ssh-keygen -t rsa -b 4096 -f ~/.ssh/mykey
 $ openstack keypair create --public-key ~/.ssh/mykey.pub mykey
-$ chmod 600 ~/.ssh/mykey.pub  # Permissions for the private key.
+$ chmod 600 ~/.ssh/mykey  # Set proper permissions for the private key
 $ openstack keypair list	# To Confirm the keypair was created.
 
 $ openstack [option] --help
