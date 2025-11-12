@@ -35,6 +35,11 @@ spec:
             secretKeyRef:
               name: postgres-secret
               key: POSTGRES_DB
+        - name: PGDATABASE
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_DB
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: postgresdata
@@ -48,17 +53,17 @@ spec:
         livenessProbe: # health check for postgres container
           exec:
             command:
-            - pg_isready
-            - -U
-            - mmuser
+            - /bin/sh
+            - -c
+            - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe: # readiness check for postgres container
           exec:
             command:
-            - pg_isready
-            - -U
-            - mmuser
+            - /bin/sh
+            - -c
+            - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
           initialDelaySeconds: 5
           periodSeconds: 5
       volumes:

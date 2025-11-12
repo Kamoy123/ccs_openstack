@@ -52,9 +52,20 @@ kubectl create secret generic postgres-secret \
   --from-literal=POSTGRES_DB=mattermost \
   --namespace mattermost
 
-# Apply PostgreSQL manifests
+# Apply PostgreSQL manifests\
+kubectl apply -f 00-postgres-secrets.yaml
 kubectl apply -f 01-postgres-pvc.yaml
-kubectl apply -f 02-postgres-deployment.yaml
+kubectl apply -f 02-postgres-pv.yaml
+kubectl apply -f 03-postgres-deployment.yaml
+
+# Note: you need to ssh into the worker node
+# to manually create mount folder and give permissions
+# using the following command. Otherwise postgres will
+# receive permission deny issue
+sudo mkdir -p /var/lib/postgresql/data
+sudo chown -R 999:999 /var/lib/postgresql
+sudo chmod 700 /var/lib/postgresql/data
+sudo chcon -Rt svirt_sandbox_file_t /var/lib/postgresql
 
 # Verify PostgreSQL is running
 kubectl get pods -n mattermost
