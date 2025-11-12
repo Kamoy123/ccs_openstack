@@ -63,7 +63,7 @@ openstack coe cluster template create k8s-mattermost-template \
     --dns-nameserver 8.8.8.8 \
     --master-flavor m1.k8s-master \
     --flavor m1.k8s-worker \
-    --docker-volume-size 20 \
+    --docker-volume-size 30 \
     --network-driver calico \
     --coe kubernetes \
     --labels octavia_enabled=true

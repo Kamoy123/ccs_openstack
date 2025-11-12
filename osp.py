@@ -58,7 +58,7 @@ $ openstack keypair list	# To Confirm the keypair was created.
 $ openstack [option] --help
 $ openstack coe cluster template list # This shows a list of custom K8s templates. # Note the UUID of the required template.
 
-$ openstack coe cluster create --cluster-template <UUID> --master-count 1 --node-count 2 --keypair mykey  mattermost-k8s-cluster	# Creates a K8s deployment named 'mattermost-k8s-cluster' with 2 worker nodes. Replace <UUID> with the actual UUID as noted previously.
+$ openstack coe cluster create --cluster-template <UUID> --master-count 1 --node-count 1 --keypair mykey  mattermost-k8s-cluster	# Creates a K8s deployment named 'mattermost-k8s-cluster' with 1 worker node. Replace <UUID> with the actual UUID as noted previously.
 $ watch openstack coe cluster show mattermost-k8s-cluster    # Monitor the cluster creation process.
 
 $ openstack stack list  # Note the stack ID of the cluster.
@@ -177,7 +177,7 @@ pc.defineParameter(
 pc.defineParameter(
     "computeNodeCount", "Number of Compute Nodes",
     portal.ParameterType.INTEGER,
-    2,
+    1,
     longDescription="The number of OpenStack compute nodes to provision. Total number of nodes will be n+1 (including controller node). Recommended: 2 or more. Try increasing this if Kubernetes Cluster creation fails due to insufficient resources."
 )
 
