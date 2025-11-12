@@ -32,14 +32,9 @@ If you changed the default values and forgot what you set it to, click on the `B
 
 ### Deploying Mattermost
 
-This profile is optimized for Mattermost deployment with two approaches:
+This profile is optimized for Mattermost deployment with k8s:
 
-#### Option 1: Direct VM Deployment
-1. Create a VM with PostgreSQL database
-2. Create a VM with Mattermost application server
-3. Optional: Use Octavia load balancer for high availability
-
-#### Option 2: Kubernetes Deployment
+#### Kubernetes Deployment
 1. Deploy a Kubernetes cluster using Magnum (see instructions below)
 2. Install Mattermost using Helm chart
 3. Use Kubernetes LoadBalancer service type with Octavia
@@ -112,9 +107,6 @@ The `k8s-manifests/` directory contains:
 - Mattermost Operator configuration
 - Mattermost installation manifests
 - NGINX Ingress configuration templates
-- Detailed README with deployment instructions
-
-See `k8s-manifests/README.md` for manual deployment steps and troubleshooting.
 
 ### Resources
 - [CloudLab Documentation](https://docs.cloudlab.us/)
