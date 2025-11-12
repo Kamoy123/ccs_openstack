@@ -13,9 +13,12 @@ spec:
       labels:
         app: postgres
     spec:
+      # Add security context to ensure proper permissions
+      securityContext:
+        fsGroup: 999  # postgres group ID
       containers:
       - name: postgres
-        image: postgres:18
+        image: postgres:15
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5432

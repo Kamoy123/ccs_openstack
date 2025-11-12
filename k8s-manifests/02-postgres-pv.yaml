@@ -12,5 +12,7 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  # Use hostPath with DirectoryOrCreate to auto-create the directory
   hostPath:
-    path: /data/postgresql
+    path: /mnt/data/postgresql
+    type: DirectoryOrCreate
