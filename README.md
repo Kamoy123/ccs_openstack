@@ -52,6 +52,9 @@ kubectl create secret generic postgres-secret \
   --from-literal=POSTGRES_DB=mattermost \
   --namespace mattermost
 
+# Confirm secrets creation
+kubectl get secrets -n mattermost
+
 # Apply PostgreSQL manifests\
 kubectl apply -f 00-postgres-secrets.yaml
 kubectl apply -f 01-postgres-pvc.yaml

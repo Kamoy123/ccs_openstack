@@ -19,7 +19,7 @@ spec:
   ingress:
     enabled: true
     # IMPORTANT: Replace ${INGRESS_IP} with your actual LoadBalancer IP
-    host: mattermost.10.0.0.88.nip.io
+    host: mattermost.10.254.206.80.nip.io
     annotations:
       kubernetes.io/ingress.class: nginx
     external:
