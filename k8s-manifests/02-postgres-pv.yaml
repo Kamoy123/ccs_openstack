@@ -14,5 +14,5 @@ spec:
     - ReadWriteOnce
   # Use hostPath with DirectoryOrCreate to auto-create the directory
   hostPath:
-    path: /mnt/data/postgresql
+    path: /var/lib/postgresql
     type: DirectoryOrCreate
