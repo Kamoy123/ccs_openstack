@@ -134,6 +134,14 @@ kubectl apply -f 07-mattermost-installation.yaml
 kubectl get pods -n mattermost -w
 ```
 
+## Deploy Mattermost Teams Edition
+```bash
+kubectl patch pvc mattermost-mattermost-team-edition -n mattermost --patch '{"spec":{"storageClassName":"manual"}}'
+kubectl patch pvc mattermost-mattermost-team-edition-plugins -n mattermost --patch '{"spec":{"storageClassName":"manual"}}'
+helm uninstall mattermost -n mattermost
+helm install mattermost -n mattermost -f values.yaml mattermost/mattermost-team-edition
+```
+
 ### Step 5: Access Mattermost
 
 ```bash
