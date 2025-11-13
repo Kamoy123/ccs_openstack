@@ -33,7 +33,8 @@ kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized-
 helm install ingress-nginx ingress-nginx/ingress-nginx \
 --version 4.3.0 \
 --namespace ingress-nginx \
---create-namespace
+--create-namespace \
+--set controller.service.type=NodePort
 
 # Get the ingress controller's IP (save this for later)
 kubectl get svc -n ingress-nginx
