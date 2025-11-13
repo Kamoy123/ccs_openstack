@@ -48,7 +48,7 @@ kubectl create namespace mattermost
 
 # Create PostgreSQL credentials secret
 kubectl create secret generic postgres-secret \
-  --from-literal=POSTGRES_USER=mmuser \
+  --from-literal=POSTGRES_USER=mattermost \
   --from-literal=POSTGRES_PASSWORD=chocolateFrog! \
   --from-literal=POSTGRES_DB=mattermost \
   --namespace mattermost
