@@ -36,157 +36,38 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
 --create-namespace \
 --set controller.service.type=NodePort
 
-# Get the ingress controller's IP (save this for later)
+# Get the worker node IP (save this for later)
+kubectl get nodes -o wide
+
+# Get nginx port mapping
 kubectl get svc -n ingress-nginx
 ```
 
-### Step 2: Deploy PostgreSQL
 
+### Step 2: Deploy Mattermost Teams Edition
 ```bash
-# Create namespace
-kubectl create namespace mattermost
-
-# Create PostgreSQL credentials secret
-kubectl create secret generic postgres-secret \
-  --from-literal=POSTGRES_USER=mattermost \
-  --from-literal=POSTGRES_PASSWORD=chocolateFrog! \
-  --from-literal=POSTGRES_DB=mattermost \
-  --namespace mattermost
-
-# Confirm secrets creation
-kubectl get secrets -n mattermost
-
-# Apply PostgreSQL manifests\
-kubectl apply -f 01-postgres-pvc.yaml
-kubectl apply -f 02-postgres-pv.yaml
-kubectl apply -f 03-postgres-deployment.yaml
-
-# Note: you need to ssh into the worker node
-# to manually create mount folder and give permissions
-# using the following command. Otherwise postgres will
-# receive permission deny issue
-sudo mkdir -p /mnt/postgresql/data
-sudo chown -R 999:999 /mnt/postgresql/data
-sudo chmod 700 /mnt/postgresql/data
-sudo chcon -Rt svirt_sandbox_file_t /mnt/postgresql/data
-
-# Verify PostgreSQL is running
-kubectl get pods -n mattermost
-kubectl logs -n mattermost -l app=postgres
-```
-
-### Step 3: Install Mattermost Operator
-
-```bash
-# Add Helm repository
-helm repo add mattermost https://helm.mattermost.com
-helm repo update
-
-# Create namespace
-kubectl create namespace mattermost-operator
-
-# check for chart version using:
-# chart version must support k8s 1.23.3
-helm search repo mattermost/mattermost-operator --versions | head
-
-# Install Mattermost Operator
-helm install mattermost-operator mattermost/mattermost-operator \
-  --version 1.0.3 \
-  --namespace mattermost-operator \
-  --create-namespace \
-  --set mattermostCR.enabled=false \
-  --set mysqlOperator.enabled=false \
-  --set minioOperator.enabled=false
-
-
-# Verify operator is running
-kubectl get pods -n mattermost-operator
-```
-
-### Step 4: Deploy Mattermost discard
-
-```bash
-
-# ssh into the worker node to create the following folders
-sudo mkdir -p /mnt/k8s/mattermost-filestore
-sudo chown 2000:2000 /mnt/k8s/mattermost-filestore
-sudo chmod 700 /mnt/k8s/mattermost-filestore
-sudo chcon -Rt /mnt/k8s/mattermost-filestore
-
-# Create database connection secret
-kubectl apply -f 04-mattermost-db-secret.yaml
-
-# Create filestore PVC and PV
-kubectl apply -f 05-mattermost-filestore-pvc.yaml
-kubectl apply -f 06-mattermost-filestore-pv.yaml
-
-# Get your LoadBalancer IP
-INGRESS_IP=$(kubectl get svc -n ingress-nginx nginx-ingress-ingress-nginx-controller \
-  -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo "Your Ingress IP: $INGRESS_IP"
-
-# Edit 05-mattermost-installation.yaml
-# Replace all instances of ${INGRESS_IP} with your actual IP address
-# Then apply:
-kubectl apply -f 07-mattermost-installation.yaml
-
-# Wait for Mattermost to be ready (may take 5-10 minutes)
-kubectl get pods -n mattermost -w
-```
-
-## Deploy Mattermost Teams Edition
-```bash
-
-# On both worker and controller
-sudo mkdir -p /var/lib/mattermost-data
-sudo mkdir -p /var/lib/mattermost-plugins
-sudo chmod -R 777 /var/lib/mattermost*
 
 # Add Helm repository
 helm repo add mattermost https://helm.mattermost.com
 helm repo update
 
+# install team edition
+helm install mattermost -n mattermost \
+  -f 08-values.yaml \
+  --set image.tag=5.35.3 \
+  --set mysql.mysqlUser=sampleUser \
+  --set mysql.mysqlPassword=samplePassword \
+  mattermost/mattermost-team-edition
 
-helm uninstall mattermost -n mattermost
-kubectl delete -f mm-plugins-pv.yaml
-kubectl delete -f mm-data-pv.yaml
-
-kubectl apply -f mm-plugins-pv.yaml
-kubectl apply -f mm-data-pv.yaml
-helm install mattermost -n mattermost -f values.yaml mattermost/mattermost-team-edition
 
 # get secret used by mattermost
 kubectl get secret mattermost-mattermost-team-edition-mattermost-dbsecret -n mattermost -o jsonpath='{.data.mattermost\.dbsecret}' | base64 -d; echo
+
+# commands to delete
+helm uninstall mattermost -n mattermost
 ```
 
-### Access PostgreSQL Cheatshee
-```bash
-# Start a shell
-kubectl get pods -n mattermost -l app=postgres
-kubectl exec -it <postgres-pod-name> -n mattermost -- bash
-
-# Inside the pod
-su - postgres
-
-# Assume user role
-psql -U <username initiated in postgres secret> # mattermost in this case
-
-# view password hash
-SELECT rolname, rolpassword FROM pg_authid WHERE rolname='<username>';
-
-# change password
-ALTER USER <username> WITH PASSWORD '<yourpassword>';
-
-# change password encryption methods
-SET password_encryption = 'md5';
-ALTER ROLE mattermost WITH PASSWORD 'chocolateFrog!';
-
-#verify
-SELECT rolpassword FROM pg_authid WHERE rolname='mattermost';
-
-```
-
-### Step 5: Access Mattermost
+### Step 3: Access Mattermost
 
 ```bash
 # Get the access URL
@@ -281,17 +162,8 @@ To remove the entire deployment:
 
 ```bash
 # Delete Mattermost
-kubectl delete -f 05-mattermost-installation.yaml
 
-# Delete operator
-helm uninstall mattermost-operator -n mattermost-operator
-kubectl delete namespace mattermost-operator
-
-# Delete PostgreSQL and storage
-kubectl delete -f 02-postgres-deployment.yaml
-kubectl delete -f 01-postgres-pvc.yaml
-kubectl delete -f 03-mattermost-db-secret.yaml
-kubectl delete -f 04-mattermost-filestore-pvc.yaml
+helm uninstall mattermost -n mattermost
 kubectl delete namespace mattermost
 
 # Delete NGINX Ingress
@@ -304,5 +176,4 @@ kubectl delete namespace ingress-nginx
 - [Mattermost Kubernetes Documentation](https://docs.mattermost.com/deployment-guide/server/deploy-kubernetes.html)
 - [Mattermost Operator GitHub](https://github.com/mattermost/mattermost-operator)
 - [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/)
-- [PostgreSQL on Kubernetes](https://www.postgresql.org/docs/)
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
