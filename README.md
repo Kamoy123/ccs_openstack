@@ -103,7 +103,7 @@ helm install mattermost-operator mattermost/mattermost-operator \
 kubectl get pods -n mattermost-operator
 ```
 
-### Step 4: Deploy Mattermost
+### Step 4: Deploy Mattermost discard
 
 ```bash
 
@@ -136,6 +136,17 @@ kubectl get pods -n mattermost -w
 
 ## Deploy Mattermost Teams Edition
 ```bash
+
+# On both worker and controller
+sudo mkdir -p /var/lib/mattermost-data
+sudo mkdir -p /var/lib/mattermost-plugins
+sudo chmod -R 777 /var/lib/mattermost*
+
+# Add Helm repository
+helm repo add mattermost https://helm.mattermost.com
+helm repo update
+
+
 helm uninstall mattermost -n mattermost
 kubectl delete -f mm-plugins-pv.yaml
 kubectl delete -f mm-data-pv.yaml
