@@ -12,7 +12,14 @@ externalDatabase:
     password: chocolateFrog!
     database: mattermost
     sslMode: disable
-
+persistence:
+  enabled: true
+  data:
+    size: 10Gi
+    storageClass: "manual"
+  plugins:
+    size: 5Gi
+    storageClass: "manual"
 ingress:
   enabled: true
   className: "nginx"
