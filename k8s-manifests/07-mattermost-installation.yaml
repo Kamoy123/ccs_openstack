@@ -19,7 +19,7 @@ spec:
   ingress:
     enabled: true
     # IMPORTANT: Replace ${INGRESS_IP} with your actual LoadBalancer IP
-    host: mattermost.10.254.206.80.nip.io
+    host: mattermost.10.254.168.83.nip.io
     ingressClass: nginx
   database:
     external:
