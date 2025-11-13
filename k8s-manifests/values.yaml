@@ -1,35 +1,28 @@
 config:
   SiteURL: http://mattermost.10.0.0.13.nip.io
+
 mysql:
   enabled: false
-initContainers:
-  mysqlCheck:
-    enabled: false
+
 externalDB:
   enabled: true
   externalDriverType: postgres
-  postgres:
-    host: postgres.mattermost.svc.cluster.local
-    port: 5432
-    username: mmuser
-    password: chocolateFrog!
-    database: mattermost
-    sslMode: disable
+  externalConnectionString: "postgres://mmuser:chocolateFrog!@postgres.mattermost.svc.cluster.local:5432/mattermost?sslmode=disable"
+
 persistence:
   enabled: true
+
   data:
-    enabled: true
     size: 10Gi
     storageClass: "manual"
-    existingClaim: ""
+
   plugins:
-    enabled: true
     size: 5Gi
     storageClass: "manual"
-    existingClaim: ""
+
 ingress:
   enabled: true
-  className: "nginx"
+  className: nginx
   hosts:
     - mattermost.10.0.0.13.nip.io
   tls: []
