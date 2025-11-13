@@ -156,6 +156,33 @@ kubectl apply -f mm-data-pv.yaml
 helm install mattermost -n mattermost -f values.yaml mattermost/mattermost-team-edition
 ```
 
+### Access PostgreSQL Cheatshee
+```bash
+# Start a shell
+kubectl get pods -n mattermost -l app=postgres
+kubectl exec -it <postgres-pod-name> -n mattermost -- bash
+
+# Inside the pod
+su - postgres
+
+# Assume user role
+psql -U <username initiated in postgres secret> # mattermost in this case
+
+# view password hash
+SELECT rolname, rolpassword FROM pg_authid WHERE rolname='<username>';
+
+# change password
+ALTER USER <username> WITH PASSWORD '<yourpassword>';
+
+# change password encryption methods
+SET password_encryption = 'md5';
+ALTER ROLE mattermost WITH PASSWORD 'chocolateFrog!';
+
+#verify
+SELECT rolpassword FROM pg_authid WHERE rolname='mattermost';
+
+```
+
 ### Step 5: Access Mattermost
 
 ```bash
