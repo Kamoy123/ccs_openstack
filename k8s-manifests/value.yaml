@@ -1,0 +1,18 @@
+config:
+  SiteURL: http://mattermost.10.0.0.13.nip.io
+
+externalDatabase:
+  enabled: true
+  host: postgres.mattermost.svc.cluster.local
+  port: 5432
+  username: mmuser
+  password: chocolateFrog!
+  database: mattermost
+  sslMode: disable
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - mattermost.10.0.0.13.nip.io
+  tls: []
