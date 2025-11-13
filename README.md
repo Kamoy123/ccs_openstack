@@ -138,9 +138,8 @@ kubectl get pods -n mattermost -w
 
 ```bash
 # Get the access URL
-INGRESS_IP=$(kubectl get svc -n ingress-nginx nginx-ingress-ingress-nginx-controller \
-  -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo "Access Mattermost at: http://mattermost.${INGRESS_IP}.nip.io"
+kubectl get svc -n ingress-nginx ingress-nginx-controller 
+# Access Mattermost at: http://mattermost.${INGRESS_IP}.nip.io"
 
 # Check deployment status
 kubectl get mattermost -n mattermost
