@@ -5,8 +5,8 @@
 #   kubectl get svc -n ingress-nginx nginx-ingress-ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 #
 # Or use nip.io for automatic DNS resolution:
-#   Replace: mattermost.${INGRESS_IP}.nip.io
-#   With: mattermost.YOUR_IP_HERE.nip.io
+#   Replace ${INGRESS_IP} to worker node IP since we used NodePort for nginx 
+#   spec.ingress.host:mattermost.${INGRESS_IP}.nip.io
 #
 apiVersion: installation.mattermost.com/v1beta1
 kind: Mattermost
@@ -18,8 +18,7 @@ spec:
   size: 50users
   ingress:
     enabled: true
-    # IMPORTANT: Replace ${INGRESS_IP} with your actual LoadBalancer IP
-    host: mattermost.192.168.100.196.nip.io
+    host: mattermost.10.0.0.13.nip.io
     ingressClass: nginx
   database:
     external:
