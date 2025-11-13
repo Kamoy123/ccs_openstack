@@ -15,11 +15,15 @@ externalDatabase:
 persistence:
   enabled: true
   data:
+    enabled: true
     size: 10Gi
     storageClass: "manual"
+    existingClaim: ""
   plugins:
+    enabled: true
     size: 5Gi
     storageClass: "manual"
+    existingClaim: ""
 ingress:
   enabled: true
   className: "nginx"
