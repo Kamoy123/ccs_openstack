@@ -89,7 +89,7 @@ helm repo update
 # Create namespace
 kubectl create namespace mattermost-operator
 
-# Install Mattermost Operator, ingore errors
+# Install Mattermost Operator
 helm install mattermost-operator mattermost/mattermost-operator \
   --version 1.0.3 \
   --namespace mattermost-operator \
@@ -106,6 +106,13 @@ kubectl get pods -n mattermost-operator
 ### Step 4: Deploy Mattermost
 
 ```bash
+
+# ssh into the worker node to create the following folders
+sudo mkdir -p /var/lib/k8s/mattermost-filestore
+sudo chown 2000:2000 /var/lib/k8s/mattermost-filestore
+sudo chmod 700 /var/lib/k8s/mattermost-filestore
+sudo chcon -Rt /var/lib/k8s/mattermost-filestore
+
 # Create database connection secret
 kubectl apply -f 04-mattermost-db-secret.yaml
 
@@ -120,7 +127,7 @@ echo "Your Ingress IP: $INGRESS_IP"
 # Edit 05-mattermost-installation.yaml
 # Replace all instances of ${INGRESS_IP} with your actual IP address
 # Then apply:
-kubectl apply -f 06-mattermost-installation.yaml
+kubectl apply -f 07-mattermost-installation.yaml
 
 # Wait for Mattermost to be ready (may take 5-10 minutes)
 kubectl get pods -n mattermost -w

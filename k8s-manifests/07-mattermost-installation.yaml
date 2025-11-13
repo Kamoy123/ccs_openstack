@@ -15,7 +15,7 @@ metadata:
   namespace: mattermost
 spec:
   version: 11.0.4 # See: https://docs.mattermost.com/product-overview/version-archive.html
-  size: 1000users
+  size: 50users
   ingress:
     enabled: true
     # IMPORTANT: Replace ${INGRESS_IP} with your actual LoadBalancer IP
