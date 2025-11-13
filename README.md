@@ -156,7 +156,6 @@ kubectl apply -f mm-data-pv.yaml
 helm install mattermost -n mattermost -f values.yaml mattermost/mattermost-team-edition
 
 # get secret used by mattermost
-kubectl get secret mattermost-mattermost-team-edition-config -n mattermost -o jsonpath='{.data.MattermostDB}' | base64 -d; echo
 kubectl get secret mattermost-mattermost-team-edition-mattermost-dbsecret -n mattermost -o jsonpath='{.data.mattermost\.dbsecret}' | base64 -d; echo
 ```
 
