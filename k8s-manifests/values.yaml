@@ -8,7 +8,7 @@ mysql:
 externalDB:
   enabled: true
   externalDriverType: postgres
-  externalConnectionString: "mattermost:chocolateFrog!@postgres.mattermost.svc.cluster.local:5432/mattermost?sslmode=disable"
+  externalConnectionString: "postgres://mattermost:chocolateFrog!@postgres.mattermost.svc.cluster.local:5432/mattermost?sslmode=disable"
 
 persistence:
   enabled: true
