@@ -5,7 +5,7 @@ mysql:
 initContainers:
   mysqlCheck:
     enabled: false
-externalDatabase:
+externalDB:
   enabled: true
   externalDriverType: postgres
   postgres:
