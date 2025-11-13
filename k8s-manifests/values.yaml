@@ -1,5 +1,6 @@
 config:
   SiteURL: http://mattermost.10.0.0.13.nip.io
+  MattermostDB: "postgres://mmuser:chocolateFrog!@postgres.mattermost.svc.cluster.local:5432/mattermost?sslmode=disable"
 
 mysql:
   enabled: false
