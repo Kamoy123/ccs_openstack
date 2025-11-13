@@ -2,6 +2,9 @@ config:
   SiteURL: http://mattermost.10.0.0.13.nip.io
 mysql:
   enabled: false
+initContainers:
+  mysqlCheck:
+    enabled: false
 externalDatabase:
   enabled: true
   externalDriverType: postgres
