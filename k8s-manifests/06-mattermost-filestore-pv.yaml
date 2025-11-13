@@ -11,7 +11,7 @@ spec:
   storageClassName: manual
   volumeMode: Filesystem
   hostPath:
-    path: /var/lib/k8s/mattermost-filestore
+    path: /mnt/k8s/mattermost-filestore
   claimRef:
     namespace: mattermost
     name: mattermost-filestore-pvc

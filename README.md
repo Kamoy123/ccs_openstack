@@ -56,7 +56,6 @@ kubectl create secret generic postgres-secret \
 kubectl get secrets -n mattermost
 
 # Apply PostgreSQL manifests\
-kubectl apply -f 00-postgres-secrets.yaml
 kubectl apply -f 01-postgres-pvc.yaml
 kubectl apply -f 02-postgres-pv.yaml
 kubectl apply -f 03-postgres-deployment.yaml
@@ -65,10 +64,10 @@ kubectl apply -f 03-postgres-deployment.yaml
 # to manually create mount folder and give permissions
 # using the following command. Otherwise postgres will
 # receive permission deny issue
-sudo mkdir -p /var/lib/postgresql/data
-sudo chown -R 999:999 /var/lib/postgresql
-sudo chmod 700 /var/lib/postgresql/data
-sudo chcon -Rt svirt_sandbox_file_t /var/lib/postgresql
+sudo mkdir -p /mnt/postgresql/data
+sudo chown -R 999:999 /mnt/postgresql/data
+sudo chmod 700 /mnt/postgresql/data
+sudo chcon -Rt svirt_sandbox_file_t /mnt/postgresql/data
 
 # Verify PostgreSQL is running
 kubectl get pods -n mattermost
@@ -108,10 +107,10 @@ kubectl get pods -n mattermost-operator
 ```bash
 
 # ssh into the worker node to create the following folders
-sudo mkdir -p /var/lib/k8s/mattermost-filestore
-sudo chown 2000:2000 /var/lib/k8s/mattermost-filestore
-sudo chmod 700 /var/lib/k8s/mattermost-filestore
-sudo chcon -Rt /var/lib/k8s/mattermost-filestore
+sudo mkdir -p /mnt/k8s/mattermost-filestore
+sudo chown 2000:2000 /mnt/k8s/mattermost-filestore
+sudo chmod 700 /mnt/k8s/mattermost-filestore
+sudo chcon -Rt /mnt/k8s/mattermost-filestore
 
 # Create database connection secret
 kubectl apply -f 04-mattermost-db-secret.yaml
