@@ -78,63 +78,15 @@ kubectl get svc -n ingress-nginx ingress-nginx-controller
 kubectl get mattermost -n mattermost
 kubectl describe mattermost -n mattermost mattermost
 ```
-## Configuration
-
-### Database Credentials
-
-Default PostgreSQL credentials (defined in secrets):
-- **User**: `mmuser`
-- **Password**: `chocolateFrog!`
-- **Database**: `mattermost`
-
-To change these, update both:
-1. The `postgres-secret` in Step 2
-2. The connection string in `03-mattermost-db-secret.yaml`
-
-### Storage Sizes
-
-Default storage allocations:
-- **PostgreSQL**: 10GB (can be increased in `01-postgres-pvc.yaml`)
-- **Mattermost Files**: 20GB (can be increased in `04-mattermost-filestore-pvc.yaml`)
-
-### Mattermost Version
-
-To deploy a different Mattermost version, edit `05-mattermost-installation.yaml`:
-```yaml
-spec:
-  version: 11.0.4
-```
-
-See [Mattermost Version Archive](https://docs.mattermost.com/product-overview/version-archive.html) for available versions.
-
-### Resource Sizing
-
-The deployment is configured for 1000 users. To change:
-```yaml
-spec:
-  size: 1000users 
-```
 
 ## Troubleshooting
 
 ### Check Pod Status
 ```bash
 kubectl get pods -n mattermost
-kubectl get pods -n mattermost-operator
 kubectl get pods -n ingress-nginx
 ```
 
-### View Logs
-```bash
-# Mattermost logs
-kubectl logs -n mattermost -l app.kubernetes.io/name=mattermost
-
-# PostgreSQL logs
-kubectl logs -n mattermost -l app=postgres
-
-# Operator logs
-kubectl logs -n mattermost-operator -l app.kubernetes.io/name=mattermost-operator
-```
 
 ### Check Mattermost Resource
 ```bash
@@ -142,27 +94,12 @@ kubectl describe mattermost -n mattermost mattermost
 kubectl get mattermost -n mattermost -o yaml
 ```
 
-### Common Issues
-
-**Issue**: Pods stuck in `Pending` state
-- **Solution**: Check PVC binding: `kubectl get pvc -n mattermost`
-- **Solution**: Check storage class: `kubectl get storageclass`
-
-**Issue**: Cannot access Mattermost URL
-- **Solution**: Verify ingress: `kubectl get ingress -n mattermost`
-- **Solution**: Check LoadBalancer IP: `kubectl get svc -n ingress-nginx`
-
-**Issue**: Database connection errors
-- **Solution**: Verify PostgreSQL is running: `kubectl get pods -n mattermost`
-- **Solution**: Check secret: `kubectl get secret -n mattermost mattermost-postgres-connection -o yaml`
-
 ## Cleanup
 
 To remove the entire deployment:
 
 ```bash
 # Delete Mattermost
-
 helm uninstall mattermost -n mattermost
 kubectl delete namespace mattermost
 
