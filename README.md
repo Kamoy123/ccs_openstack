@@ -136,9 +136,12 @@ kubectl get pods -n mattermost -w
 
 ## Deploy Mattermost Teams Edition
 ```bash
-kubectl patch pvc mattermost-mattermost-team-edition -n mattermost --patch '{"spec":{"storageClassName":"manual"}}'
-kubectl patch pvc mattermost-mattermost-team-edition-plugins -n mattermost --patch '{"spec":{"storageClassName":"manual"}}'
 helm uninstall mattermost -n mattermost
+kubectl delete -f mm-plugins-pv.yaml
+kubectl delete -f mm-data-pv.yaml
+
+kubectl apply -f mm-plugins-pv.yaml
+kubectl apply -f mm-data-pv.yaml
 helm install mattermost -n mattermost -f values.yaml mattermost/mattermost-team-edition
 ```
 
@@ -153,17 +156,6 @@ kubectl get svc -n ingress-nginx ingress-nginx-controller
 kubectl get mattermost -n mattermost
 kubectl describe mattermost -n mattermost mattermost
 ```
-
-## Manifest Files
-
-| File | Description |
-|------|-------------|
-| `01-postgres-pvc.yaml` | PostgreSQL persistent volume claim (10GB) |
-| `02-postgres-deployment.yaml` | PostgreSQL deployment and service |
-| `03-mattermost-db-secret.yaml` | Database connection credentials |
-| `04-mattermost-filestore-pvc.yaml` | Mattermost file storage PVC (20GB) |
-| `05-mattermost-installation.yaml` | Mattermost custom resource definition |
-
 ## Configuration
 
 ### Database Credentials
