@@ -116,8 +116,9 @@ sudo chcon -Rt /mnt/k8s/mattermost-filestore
 # Create database connection secret
 kubectl apply -f 04-mattermost-db-secret.yaml
 
-# Create filestore PVC
+# Create filestore PVC and PV
 kubectl apply -f 05-mattermost-filestore-pvc.yaml
+kubectl apply -f 06-mattermost-filestore-pv.yaml
 
 # Get your LoadBalancer IP
 INGRESS_IP=$(kubectl get svc -n ingress-nginx nginx-ingress-ingress-nginx-controller \
