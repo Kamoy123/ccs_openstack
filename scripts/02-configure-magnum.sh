@@ -68,7 +68,7 @@ openstack coe cluster template create k8s-mattermost-template \
     --network-driver calico \
     --coe kubernetes \
     --volume-driver cinder \
-    --labels octavia_enabled=true,cinder_csi_enabled=true,cloud_provider_enabled=true
+    --labels octavia_enabled=true,cinder_csi_enabled=true,cloud_provider_enabled=true,kube_tag=v1.18.0
 
 # --- Verification ---
 # List the created cluster templates to confirm success.
