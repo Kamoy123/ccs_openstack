@@ -1,11 +1,11 @@
 configJSON: {
   "ServiceSettings": {
-    "SiteURL": "http://mattermost.10.0.0.13.nip.io:32051"
+    "SiteURL": "http://mattermost.10.0.0.234.nip.io:31651"
   }
 }
 ingress:
   enabled: true
   className: "nginx"
   hosts:
-    - mattermost.10.0.0.13.nip.io
+    - mattermost.10.0.0.234.nip.io
   tls: []
