@@ -26,9 +26,6 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 # Update helm repo
 helm repo update
 
-# Release node tains
-kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized-
-
 # Install ingress-nginx
 helm install ingress-nginx ingress-nginx/ingress-nginx \
 --version 4.3.0 \
@@ -41,11 +38,19 @@ kubectl get nodes -o wide
 
 # Get nginx port mapping
 kubectl get svc -n ingress-nginx
+
+# Update the ip address in k8s-manifests/values.yaml to external IP of worker node
+# and port mapped to 80 or 443. Use port mapped to 80 is TLS is not enabled.
+
+# Release node tains - Do not use this command
+kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized-
 ```
 
 
 ### Step 2: Deploy Mattermost Teams Edition
 ```bash
+# Create namespace
+kubectl create namespace mattermost
 
 # Add Helm repository
 helm repo add mattermost https://helm.mattermost.com
@@ -53,7 +58,7 @@ helm repo update
 
 # install team edition
 helm install mattermost -n mattermost \
-  -f 08-values.yaml \
+  -f values.yaml \
   --set image.tag=5.35.3 \
   --set mysql.mysqlUser=sampleUser \
   --set mysql.mysqlPassword=samplePassword \
