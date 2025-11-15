@@ -168,7 +168,7 @@ pc.defineParameter(
 pc.defineParameter(
     "hwType", "Hardware Type",
     portal.ParameterType.NODETYPE,
-    "d430", # Default to d430 nodes.
+    "d710", # Default to d430 nodes.
     longDescription="Specify a hardware type for all nodes. Clear Selection for any available type."
 )
 
