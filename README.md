@@ -48,6 +48,27 @@ kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized-
 
 
 ### Step 2: Deploy Mattermost Teams Edition
+---
+#### Note: current deployment does not have dynamic volume provisioner in place. Therefore, we need to manually create persistent volume for Mattermost. 
+```bash
+# First try to deploy mattermost and run the following commands to confirm what mattermost's persistent volume claim is requesting, the size in config map must match the size
+kubectl -n mattermost get pvc mattermost-mattermost-team-edition -o yaml | egrep 'storage:|accessModes|storageClassName'
+kubectl -n mattermost get pvc mattermost-mattermost-team-edition-plugins -o yaml | egrep 'storage:|accessModes|storageClassName'
+kubectl -n mattermost get pvc mattermost-mysql -o yaml | egrep 'storage:|accessModes|storageClassName'
+
+# Then, we need to pick a node to host data, run the following command to label the node, replace <NODE_NAME> with the worker node's name.
+kubectl get nodes -o wide
+kubectl label node <NODE_NAME> storage=mattermost --overwrite
+
+# SSH into the node to manually prepare directories for matter, you can choose any folder but we picked /mnt folder because it's guranteed to be clean to write
+# Do note write to /var because linux write system files to it and mattermost will refuse to bind if the directory is not empty. Manually clearing the directory won't work
+ssh -i ~/.ssh/mykey core@<worker-node-ip> # <-- do this in the shell
+sudo mkdir -p /mnt/mattermost/app /mnt/mattermost/plugins /mnt/mattermost/mysql
+sudo chmod -R 0777 /mnt/mattermost   # quick-and-dirty; tighten later if needed
+
+```
+---
+#### Deploy mattermost teams edition
 ```bash
 # Create namespace
 kubectl create namespace mattermost
@@ -55,6 +76,11 @@ kubectl create namespace mattermost
 # Add Helm repository
 helm repo add mattermost https://helm.mattermost.com
 helm repo update
+
+# Provision Presistent Volume for mattermost to bind
+kubectl apply -f 01-mm-pv-app.yaml -n mattermost
+kubectl apply -f 02-mm-pv-plugins.yaml -n mattermost
+kubectl apply -f 03-mm-pv-mysql.yaml -n mattermost
 
 # install team edition
 helm install mattermost -n mattermost \
@@ -65,7 +91,7 @@ helm install mattermost -n mattermost \
   mattermost/mattermost-team-edition
 
 
-# get secret used by mattermost
+# get secret used by mattermost - ignore this
 kubectl get secret mattermost-mattermost-team-edition-mattermost-dbsecret -n mattermost -o jsonpath='{.data.mattermost\.dbsecret}' | base64 -d; echo
 
 # commands to delete
