@@ -64,8 +64,11 @@ kubectl label node <NODE_NAME> storage=mattermost --overwrite
 # Do note write to /var because linux write system files to it and mattermost will refuse to bind if the directory is not empty. Manually clearing the directory won't work
 ssh -i ~/.ssh/mykey core@<worker-node-ip> # <-- do this in the shell
 sudo mkdir -p /mnt/mattermost/app /mnt/mattermost/plugins /mnt/mattermost/mysql
-sudo chmod -R 0777 /mnt/mattermost   # quick-and-dirty; tighten later if needed
-
+sudo chmod -R 0777 /mnt/mattermost
+# adjust the permission and SELinux mode on folders or mattermost do not have enough permission to write to the directories
+sudo chown -R 999:999 /mnt/mattermost/app
+sudo chmod -R 0777 /mnt/mattermost/app
+sudo chcon -Rt svirt_sandbox_file_t /mnt/mattermost/app || true
 ```
 ---
 #### Deploy mattermost teams edition
