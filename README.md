@@ -51,7 +51,7 @@ kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized-
 ---
 #### Note: current deployment does not have dynamic volume provisioner in place. Therefore, we need to manually create persistent volume for Mattermost. 
 ```bash
-# First try to deploy mattermost and run the following commands to confirm what mattermost's persistent volume claim is requesting, the size in config map must match the size
+# First try to deploy mattermost and run the following commands to confirm what mattermost's persistent volume claim is requesting, the size in config map must match the size. Don't forget to uninstall after you obtained the size requested
 kubectl -n mattermost get pvc mattermost-mattermost-team-edition -o yaml | egrep 'storage:|accessModes|storageClassName'
 kubectl -n mattermost get pvc mattermost-mattermost-team-edition-plugins -o yaml | egrep 'storage:|accessModes|storageClassName'
 kubectl -n mattermost get pvc mattermost-mysql -o yaml | egrep 'storage:|accessModes|storageClassName'
@@ -82,6 +82,9 @@ kubectl apply -f 01-mm-pv-app.yaml -n mattermost
 kubectl apply -f 02-mm-pv-plugins.yaml -n mattermost
 kubectl apply -f 03-mm-pv-mysql.yaml -n mattermost
 
+# Use the following command to confirm pv is sucessfully created
+kubectl get pv -n mattermost
+
 # install team edition
 helm install mattermost -n mattermost \
   -f values.yaml \
@@ -90,12 +93,18 @@ helm install mattermost -n mattermost \
   --set mysql.mysqlPassword=samplePassword \
   mattermost/mattermost-team-edition
 
+# use the following command to confirm creation status
+kubectl get pods -n mattermost
 
 # get secret used by mattermost - ignore this
 kubectl get secret mattermost-mattermost-team-edition-mattermost-dbsecret -n mattermost -o jsonpath='{.data.mattermost\.dbsecret}' | base64 -d; echo
 
+# everytime you delete mattermost you must manually delete all pv to reinstall, or previously created pv will not auto re-bound to new pvc.
 # commands to delete
 helm uninstall mattermost -n mattermost
+kubectl delete -f 01-mm-pv-app.yaml -n mattermost
+kubectl delete -f 02-mm-pv-plugins.yaml -n mattermost
+kubectl delete -f 03-mm-pv-mysql.yaml -n mattermost
 ```
 
 ### Step 3: Access Mattermost
