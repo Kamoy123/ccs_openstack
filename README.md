@@ -1,5 +1,5 @@
 ## Overview
-Follow the instruction once the cluster is created
+### Follow the instruction once the cluster is created
 
 The deployment includes:
 - **NGINX Ingress Controller** - Routes external traffic to Mattermost
@@ -9,7 +9,6 @@ The deployment includes:
 
 ## k8s cluster troubleshoot
 ### Note:
----
 The default template has some issues with pulling many required images to create system wide pods. 
 Adding labels to the template result in kube_master creation failure
 Therefore, we need manually patch these pods after cluster creation
@@ -32,7 +31,6 @@ kubectl -n kube-system rollout status ds/k8s-keystone-auth
 # Clear the 'uninitialized' taint
 kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized- || true
 ```
----
 ## Manual Deployment Steps
 
 ### Step 1: Install NGINX Ingress Controller
