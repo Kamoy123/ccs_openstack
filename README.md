@@ -67,30 +67,25 @@ kubectl get svc -n ingress-nginx
 ---
 #### Note: current deployment does not have dynamic volume provisioner in place. Therefore, we need to manually create persistent volume for Mattermost. 
 ```bash
-#-----------------------------------
-# First try to deploy mattermost and run the following commands to confirm what mattermost's persistent volume claim is requesting, the size in config map must match the size. Don't forget to uninstall after you obtained the size requested
-#-----------------------------------
-kubectl -n mattermost get pvc mattermost-mattermost-team-edition -o yaml | egrep 'storage:|accessModes|storageClassName'
-kubectl -n mattermost get pvc mattermost-mattermost-team-edition-plugins -o yaml | egrep 'storage:|accessModes|storageClassName'
-kubectl -n mattermost get pvc mattermost-mysql -o yaml | egrep 'storage:|accessModes|storageClassName'
-
-# Then, we need to pick a node to host data, run the following command to label the node, replace <NODE_NAME> with the worker node's name.
+# Pick a node to host data, run the following command to label the node, replace <NODE_NAME> with the worker node's name.
 kubectl get nodes -o wide
 kubectl label node <NODE_NAME> storage=mattermost --overwrite
 
-# SSH into the node to manually prepare directories for matter, you can choose any folder but we picked /mnt folder because it's guranteed to be clean to write
+# SSH into the worker node to manually prepare directories for matter, you can choose any folder but we picked /mnt folder because it's guranteed to be clean to write
 # Do note write to /var because linux write system files to it and mattermost will refuse to bind if the directory is not empty. Manually clearing the directory won't work
+
 ssh -i ~/.ssh/mykey core@<worker-node-ip> # <-- do this in the shell, password is 0000
 sudo mkdir -p /mnt/mattermost/app /mnt/mattermost/plugins /mnt/mattermost/mysql
 sudo chmod -R 0777 /mnt/mattermost
+
 # adjust the permission and SELinux mode on folders or mattermost do not have enough permission to write to the directories
 sudo chown -R 999:999 /mnt/mattermost/app
 sudo chmod -R 0777 /mnt/mattermost/app
 sudo chcon -Rt svirt_sandbox_file_t /mnt/mattermost/app || true
 ```
----
 #### Deploy mattermost teams edition
 ```bash
+# ssh back to ther controller node, as super user, run the following commands
 # Clone the github repo to the master node
 git clone https://github.com/kevin-zhou-1028/ccs_openstack.git
 
@@ -152,6 +147,11 @@ kubectl describe mattermost -n mattermost mattermost
 ```bash
 kubectl get pods -n mattermost
 kubectl get pods -n ingress-nginx
+
+# Commands to confirm what mattermost's persistent volume claim is requesting
+kubectl -n mattermost get pvc mattermost-mattermost-team-edition -o yaml | egrep 'storage:|accessModes|storageClassName'
+kubectl -n mattermost get pvc mattermost-mattermost-team-edition-plugins -o yaml | egrep 'storage:|accessModes|storageClassName'
+kubectl -n mattermost get pvc mattermost-mysql -o yaml | egrep 'storage:|accessModes|storageClassName'
 ```
 
 
