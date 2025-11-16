@@ -1,18 +1,39 @@
-# Kubernetes Manifests for Mattermost Deployment
-
-This directory contains Kubernetes manifest files for deploying Mattermost with all required dependencies on your Kubernetes cluster.
-
 ## Overview
+Follow the instruction once the cluster is created
 
 The deployment includes:
 - **NGINX Ingress Controller** - Routes external traffic to Mattermost
-- **PostgreSQL Database** - Persistent database with 10GB storage
-- **Mattermost Operator** - Manages Mattermost installation
-- **Mattermost** - The collaboration platform with 20GB file storage
+- **MySQL Database** - Persistent database with 10GB storage
+- **Mattermost** - The collaboration platform with 10GB file storage
+- **Mattermost plugin** - Platform plugin that takes 1GB
 
+## k8s cluster troubleshoot
+### Note:
+---
+The default template has some issues with pulling many required images to create system wide pods. 
+Adding labels to the template result in kube_master creation failure
+Therefore, we need manually patch these pods after cluster creation
+Use the following command to examine, update, and patch pods after ssh in to the mater node
+```bash
+# Command to check pods health status
+kubectl -n kube-system get pods -o wide
+
+# Point OCCM + Keystone-Auth to Docker Hub mirrors (the registry.k8s.io tags didn’t exist)
+kubectl -n kube-system set image ds/openstack-cloud-controller-manager \
+  openstack-cloud-controller-manager=docker.io/k8scloudprovider/openstack-cloud-controller-manager:v1.23.1
+
+kubectl -n kube-system set image ds/k8s-keystone-auth \
+  k8s-keystone-auth=docker.io/k8scloudprovider/k8s-keystone-auth:v1.18.0
+
+# Use the code to examine DaemonSets roll out status
+kubectl -n kube-system rollout status ds/openstack-cloud-controller-manager
+kubectl -n kube-system rollout status ds/k8s-keystone-auth
+
+# Clear the 'uninitialized' taint
+kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized- || true
+```
+---
 ## Manual Deployment Steps
-
-If you prefer manual deployment, follow these steps:
 
 ### Step 1: Install NGINX Ingress Controller
 
