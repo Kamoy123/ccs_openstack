@@ -1,6 +1,6 @@
 configJSON: {
   "ServiceSettings": {
-    "SiteURL": "http://controller.team1-ccs-hw6-mm.jhucloudsec2025.emulab.net"
+    "SiteURL": "http://mattermost.192.168.100.241.nip.io:port"
   }
 }
 ingress:
