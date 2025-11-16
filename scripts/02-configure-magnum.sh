@@ -56,23 +56,6 @@ echo "Creating Magnum Cluster Template for Mattermost deployment..."
 # Note: Using Calico instead of Flannel due to image availability issues
 # Flannel's default images (quay.io/coreos/flannel-cni:v0.3.0) are no longer publicly accessible
 # Using flannel will cause cluster to be unhealthy
-'''
-openstack coe cluster template create k8s-mattermost-template \
-    --image "$K8S_IMAGE_NAME" \
-    --keypair mykey \
-    --external-network public \
-    --dns-nameserver 8.8.8.8 \
-    --master-flavor m1.k8s-master \
-    --flavor m1.k8s-worker \
-    --docker-volume-size 30 \
-    --network-driver calico \
-    --coe kubernetes \
-    --volume-driver cinder \
-    --labels cinder_csi_enabled=true,\
-    cinder_csi_plugin_tag=v1.24.6,\
-    keystone_auth_enabled=true,\
-    k8s_keystone_auth_tag=v1.24.6
-'''
 openstack coe cluster template create k8s-mattermost-template \
   --image "$K8S_IMAGE_NAME" \
   --keypair mykey \
@@ -84,24 +67,23 @@ openstack coe cluster template create k8s-mattermost-template \
   --network-driver calico \
   --coe kubernetes \
   --volume-driver cinder \
-  --labels \
-container_infra_prefix=docker.io/,\
-cloud_provider_enabled=true,\
-cloud_provider_image=docker.io/k8scloudprovider/openstack-cloud-controller-manager,\
-cloud_provider_tag=v1.23.1,\
-keystone_auth_enabled=true,\
-k8s_keystone_auth_image=docker.io/k8scloudprovider/k8s-keystone-auth,\
-k8s_keystone_auth_tag=v1.18.0,\
-cinder_csi_enabled=true,\
-cinder_csi_plugin_tag=v1.24.6,\
-octavia_enabled=true,\
-cni_network_provider=calico,\
-calico_tag=v3.24.5,\
-coredns_tag=1.8.6,\
-metrics_server_enabled=true,\
-metrics_server_chart_tag=3.8.2,\
-docker_registry_mirror=http://mirror.gcr.io,\
-post_install_manifest_url=https://raw.githubusercontent.com/stackhpc/magnum-extras/main/manifests/image-prepuller.yaml
+  --labels container_infra_prefix=docker.io/,\
+  cloud_provider_enabled=true,\
+  cloud_provider_image=docker.io/k8scloudprovider/openstack-cloud-controller-manager,\
+  cloud_provider_tag=v1.23.1,\
+  keystone_auth_enabled=true,\
+  k8s_keystone_auth_image=docker.io/k8scloudprovider/k8s-keystone-auth,\
+  k8s_keystone_auth_tag=v1.18.0,\
+  cinder_csi_enabled=true,\
+  cinder_csi_plugin_tag=v1.24.6,\
+  octavia_enabled=true,\
+  cni_network_provider=calico,\
+  calico_tag=v3.24.5,\
+  coredns_tag=1.8.6,\
+  metrics_server_enabled=true,\
+  metrics_server_chart_tag=3.8.2,\
+  docker_registry_mirror=http://mirror.gcr.io,\
+  post_install_manifest_url=https://raw.githubusercontent.com/stackhpc/magnum-extras/main/manifests/image-prepuller.yaml
 
 
 # --- Verification ---
