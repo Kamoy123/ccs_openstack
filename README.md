@@ -127,6 +127,8 @@ helm uninstall mattermost -n mattermost
 kubectl delete -f 01-mm-pv-app.yaml -n mattermost
 kubectl delete -f 02-mm-pv-plugins.yaml -n mattermost
 kubectl delete -f 03-mm-pv-mysql.yaml -n mattermost
+
+# if redeployment failed, it's probabaly because /mnt/mattermost/app have some remaining files. For Mattermost to deploy, it must uses empty directories. SSH into the worker node to empty /mnt/mattermost/app.
 ```
 
 ### Step 3: Access Mattermost
