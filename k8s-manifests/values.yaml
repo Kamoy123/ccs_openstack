@@ -1,8 +1,6 @@
-configJSON: {
-  "ServiceSettings": {
-    "SiteURL": "http://mattermost.192.168.100.220.nip.io"
-  }
-}
+configJSON: 
+  ServiceSettings: 
+    SiteURL: "http://mattermost.192.168.100.220.nip.io"
 ingress:
   enabled: true
   className: "nginx"
