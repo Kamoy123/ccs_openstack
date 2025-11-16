@@ -60,9 +60,6 @@ kubectl get svc -n ingress-nginx
 
 # Update the ip address in k8s-manifests/values.yaml to external IP of worker node
 # and port mapped to 80 or 443. Use port mapped to 80 is TLS is not enabled.
-
-# Release node tains - Do not use this command
-kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized-
 ```
 
 
