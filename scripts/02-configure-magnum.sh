@@ -66,7 +66,6 @@ openstack coe cluster template create k8s-mattermost-template \
   --docker-volume-size 30 \
   --network-driver calico \
   --coe kubernetes \
-  --volume-driver cinder \
   --labels container_infra_prefix=docker.io/,\
   cloud_provider_enabled=true,\
   cloud_provider_image=docker.io/k8scloudprovider/openstack-cloud-controller-manager,\
@@ -74,10 +73,6 @@ openstack coe cluster template create k8s-mattermost-template \
   keystone_auth_enabled=true,\
   k8s_keystone_auth_image=docker.io/k8scloudprovider/k8s-keystone-auth,\
   k8s_keystone_auth_tag=v1.18.0,\
-  cinder_csi_enabled=true,\
-  cinder_csi_plugin_tag=v1.24.6,\
-  octavia_enabled=true,\
-  cni_network_provider=calico,\
   calico_tag=v3.24.5,\
   coredns_tag=1.8.6,\
   metrics_server_enabled=true,\
