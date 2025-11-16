@@ -1,16 +1,11 @@
-configJSON:
-  ServiceSettings:
-    SiteURL: "http://mattermost.192.168.100.220.nip.io"
-
-ingress:
-  enabled: true
-  className: "nginx"
-  hosts:
-    - mattermost.192.168.100.220.nip.io
-  path: /
-  pathType: Prefix
+configJSON: { 
+  "ServiceSettings": { 
+    "SiteURL": "http://mattermost.192.168.100.220.nip.io:30812" 
+  } 
+} 
+ingress: 
+  enabled: true 
+  className: "nginx" 
+  hosts: 
+    - mattermost.192.168.100.220.nip.io 
   tls: []
-
-service:
-  type: ClusterIP
-  port: 8065
