@@ -65,21 +65,7 @@ openstack coe cluster template create k8s-mattermost-template \
   --flavor m1.k8s-worker \
   --docker-volume-size 30 \
   --network-driver calico \
-  --coe kubernetes \
-  --labels container_infra_prefix=docker.io/,\
-  cloud_provider_enabled=true,\
-  cloud_provider_image=docker.io/k8scloudprovider/openstack-cloud-controller-manager,\
-  cloud_provider_tag=v1.23.1,\
-  keystone_auth_enabled=true,\
-  k8s_keystone_auth_image=docker.io/k8scloudprovider/k8s-keystone-auth,\
-  k8s_keystone_auth_tag=v1.18.0,\
-  calico_tag=v3.24.5,\
-  coredns_tag=1.8.6,\
-  metrics_server_enabled=true,\
-  metrics_server_chart_tag=3.8.2,\
-  docker_registry_mirror=http://mirror.gcr.io,\
-  post_install_manifest_url=https://raw.githubusercontent.com/stackhpc/magnum-extras/main/manifests/image-prepuller.yaml
-
+  --coe kubernetes
 
 # --- Verification ---
 # List the created cluster templates to confirm success.
