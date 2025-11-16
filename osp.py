@@ -238,6 +238,7 @@ for i in range(params.computeNodeCount):
         node.hardware_type = params.hwType
     
     # Add the compute node to the LAN.
+    node.routable_control_ip = True
     iface_compute = node.addInterface("if0")
     lan.addInterface(iface_compute)
     
