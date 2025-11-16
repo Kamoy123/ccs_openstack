@@ -32,7 +32,7 @@ kubectl -n kube-system rollout status ds/k8s-keystone-auth
 kubectl taint nodes --all node.cloudprovider.kubernetes.io/uninitialized- || true
 ```
 ## Manual Deployment Steps
-
+Executue the rest of the commands as superuser via `sudo su`
 ### Step 1: Install NGINX Ingress Controller
 
 ```bash
@@ -67,6 +67,9 @@ kubectl get svc -n ingress-nginx
 ---
 #### Note: current deployment does not have dynamic volume provisioner in place. Therefore, we need to manually create persistent volume for Mattermost. 
 ```bash
+# Clone the github repo to the master node
+git clone https://github.com/kevin-zhou-1028/ccs_openstack.git
+
 # First try to deploy mattermost and run the following commands to confirm what mattermost's persistent volume claim is requesting, the size in config map must match the size. Don't forget to uninstall after you obtained the size requested
 kubectl -n mattermost get pvc mattermost-mattermost-team-edition -o yaml | egrep 'storage:|accessModes|storageClassName'
 kubectl -n mattermost get pvc mattermost-mattermost-team-edition-plugins -o yaml | egrep 'storage:|accessModes|storageClassName'
