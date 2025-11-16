@@ -70,6 +70,9 @@ kubectl get svc -n ingress-nginx
 # Clone the github repo to the master node
 git clone https://github.com/kevin-zhou-1028/ccs_openstack.git
 
+# Cd into manifest folder
+cd ccs_openstack/k8s-manifests/
+
 # First try to deploy mattermost and run the following commands to confirm what mattermost's persistent volume claim is requesting, the size in config map must match the size. Don't forget to uninstall after you obtained the size requested
 kubectl -n mattermost get pvc mattermost-mattermost-team-edition -o yaml | egrep 'storage:|accessModes|storageClassName'
 kubectl -n mattermost get pvc mattermost-mattermost-team-edition-plugins -o yaml | egrep 'storage:|accessModes|storageClassName'
